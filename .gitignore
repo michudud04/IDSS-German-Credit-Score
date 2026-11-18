@@ -7,7 +7,7 @@ ENV/
 *.csv
 *.xls
 *.xlsx
-data/
+/data/
 
 # Jupyter Notebook Checkpoints & Python Cache
 .ipynb_checkpoints/
