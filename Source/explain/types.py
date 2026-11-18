@@ -81,6 +81,8 @@ class UnusualCheck:
     score: float                    # mean distance to the nearest training applicants
     threshold: float                # score above this is unusual (set on the validation split)
     reasons: list[str] = field(default_factory=list)  # readable reasons, e.g. range violations
+    # Machine-readable causes: "far_from_past_applicants", "outside_observed_range", "lateness_code".
+    triggers: list[str] = field(default_factory=list)
 
     def to_dict(self) -> dict:
         return asdict(self)

@@ -1,0 +1,87 @@
+{
+  "description": "Unusual-case warning. A score above distance_threshold, a value outside [min, max], or a lateness code makes an applicant unusual.",
+  "k": 10,
+  "flag_rate": 0.01,
+  "distance_threshold": 2.28710718133105,
+  "profile_columns": [
+    "RevUtil",
+    "Age",
+    "Late30_59",
+    "Late60_89",
+    "Late90",
+    "MonthlyIncome",
+    "MonthlyDebt",
+    "OpenLines",
+    "RealEstateLines",
+    "Dependents",
+    "IncomeMissing",
+    "LateCodeFlag"
+  ],
+  "fields": {
+    "RevUtil": {
+      "min": 0.0,
+      "max": 7.3089701,
+      "q_low": 0.0,
+      "q_high": 1.9159482932250038
+    },
+    "Age": {
+      "min": 21.0,
+      "max": 109.0,
+      "q_low": 21.0,
+      "q_high": 93.0
+    },
+    "Late30_59": {
+      "min": 0.0,
+      "max": 12.0,
+      "q_low": 0.0,
+      "q_high": 6.0
+    },
+    "Late60_89": {
+      "min": 0.0,
+      "max": 11.0,
+      "q_low": 0.0,
+      "q_high": 4.0
+    },
+    "Late90": {
+      "min": 0.0,
+      "max": 17.0,
+      "q_low": 0.0,
+      "q_high": 6.0
+    },
+    "MonthlyIncome": {
+      "min": 101.0,
+      "max": 3008750.0,
+      "q_low": 300.0,
+      "q_high": 71000.33500000129
+    },
+    "MonthlyDebt": {
+      "min": 0.0,
+      "max": 474705.0,
+      "q_low": 0.0,
+      "q_high": 27390.32800000126
+    },
+    "OpenLines": {
+      "min": 0.0,
+      "max": 58.0,
+      "q_low": 0.0,
+      "q_high": 35.0
+    },
+    "RealEstateLines": {
+      "min": 0.0,
+      "max": 54.0,
+      "q_low": 0.0,
+      "q_high": 9.0
+    },
+    "Dependents": {
+      "min": 0.0,
+      "max": 20.0,
+      "q_low": 0.0,
+      "q_high": 6.0
+    }
+  },
+  "lateness_code_default_rate": 0.559322033898305,
+  "fitted_on": {
+    "ranges_and_index": "train",
+    "threshold": "val"
+  }
+}

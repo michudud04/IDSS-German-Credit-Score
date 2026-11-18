@@ -50,7 +50,8 @@ class SimilarCaseFinder:
         # The numeric profile columns are already standardised by the preprocessing,
         # so this scaler only changes the two 0/1 flags.
         self.scaler = StandardScaler().fit(train_scaled[PROFILE_COLUMNS])
-        self.index = NearestNeighbors().fit(self._embed(train_scaled))
+        self.embedded = self._embed(train_scaled)  # training profiles in the comparison space
+        self.index = NearestNeighbors().fit(self.embedded)
 
         self.case_ids = train_scaled.index.to_numpy()
         self.outcomes = train_readable[TARGET].to_numpy().astype(bool)
@@ -64,6 +65,7 @@ class SimilarCaseFinder:
         return cls(load_split("train", "readable"), load_split("train", "model"), **kwargs)
 
     def _embed(self, scaled: pd.DataFrame) -> np.ndarray:
+        """Model-scale table -> points in the comparison space (one row per applicant)."""
         return self.scaler.transform(scaled[PROFILE_COLUMNS])
 
     def neighbours(self, scaled: pd.DataFrame, k: int) -> tuple[np.ndarray, np.ndarray]:
