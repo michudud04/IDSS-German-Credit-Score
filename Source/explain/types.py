@@ -61,6 +61,7 @@ class SimilarCase:
     distance: float                 # distance on the model scale (smaller = more similar)
     inputs: dict[str, float]        # the past applicant's values in original units
     defaulted: bool                 # outcome: serious delinquency within 2 years
+    income_estimated: bool = False  # that applicant's income was not declared (value is an estimate)
 
 
 @dataclass
