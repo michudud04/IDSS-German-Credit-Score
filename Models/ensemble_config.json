@@ -1,0 +1,30 @@
+{
+    "weights": {
+        "logreg": 0.05,
+        "tree": 0.05,
+        "xgboost": 0.9
+    },
+    "features": [
+        "RevUtil",
+        "OverLimit",
+        "Late30_59",
+        "Late60_89",
+        "Late90",
+        "LateCodeFlag",
+        "MonthlyIncome",
+        "MonthlyDebt",
+        "DebtRatio",
+        "SavingCapacity",
+        "IncomePerPerson",
+        "IncomeMissing",
+        "OpenLines",
+        "RealEstateLines",
+        "Age"
+    ],
+    "feature_representation": {
+        "logreg": "model",
+        "tree": "readable",
+        "xgboost": "readable"
+    },
+    "decision_threshold": 0.2
+}
