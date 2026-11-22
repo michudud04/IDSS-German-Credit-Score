@@ -8,7 +8,7 @@ import pandas as pd
 
 from Source.app.case_result import CaseResult, DecisionLabel
 from Source.data.preprocessing import INPUT_FIELDS, Preprocessor
-from Source.explain.pipeline import COMBINED, MODEL_NAMES, RiskPipeline
+from Source.explain.pipeline import COMBINED, MODEL_NAMES, RiskPipeline, SklearnAdapter
 from Source.explain.similar import SimilarCaseFinder
 from Source.explain.standins import load_standin_pipeline
 from Source.explain.types import AdviceItem, KeyFactor, SimilarCases, UnusualCheck
@@ -35,15 +35,22 @@ class IDSSOrchestrator:
         unusual_detector: UnusualCaseDetector | None = None,
     ) -> None:
         self.preprocessor = preprocessor or Preprocessor.load()
-        self.pipeline = pipeline or self._load_pipeline()
+        self.pipeline = pipeline or self._load_pipeline(self.preprocessor)
         self.similar_finder = similar_finder or SimilarCaseFinder.from_training_data()
         self.unusual_detector = unusual_detector or load_detector(self.similar_finder)
 
     @staticmethod
-    def _load_pipeline() -> RiskPipeline:
-        loader = _load_optional_callable("Source.models", "load_production_pipeline")
-        if loader is not None:
-            return loader()
+    def _load_pipeline(preprocessor: Preprocessor) -> RiskPipeline:
+        load_models = _load_optional_callable("Source.model_loader", "load_models")
+        if load_models is not None:
+            raw_models, cfg = load_models()
+            features = cfg["features"]
+            spaces = cfg["feature_representation"]
+            adapters = {
+                name: SklearnAdapter(est, features, spaces[name])
+                for name, est in raw_models.items()
+            }
+            return RiskPipeline(preprocessor, adapters, weights=cfg["weights"])
         return load_standin_pipeline()
 
     def evaluate_applicant(
