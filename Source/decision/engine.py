@@ -4,7 +4,11 @@ Order of precedence (first match decides the outcome; all reasons are kept):
 
 1. A bank rule that rejects (``rules.py``)                   -> reject
 2. Unusual applicant (C's warning): the model is unreliable  -> review
-   (on the test set, flagged applicants: AUC 0.71 vs 0.86, Brier 0.22 vs 0.05)
+   (models notebook, test set: AUC 0.71 vs 0.86, Brier 0.22 vs 0.05 on flagged
+   applicants. Validation, with the extreme_value trigger: 1.7% flagged, 33%
+   default vs 6.2%. This applies even when the model would reject: only 18 of
+   24,000 validation applicants move from reject to review because of a single
+   extreme value, and the officer can still reject them.)
 3. Probability in the reject band of the slider              -> reject
    Review rules do not soften a clear model rejection; they only stop
    an automatic approval.
@@ -27,7 +31,7 @@ from Source.explain.pipeline import COMBINED, RiskPipeline
 from Source.explain.types import UnusualCheck
 
 # The models disagree if they fall on both sides of the cut-off AND their
-# probabilities are this far apart. Validation: 1.8% of applicants at the default setting.
+# probabilities are this far apart. Validation: 1.4% of applicants at the default setting.
 DISAGREEMENT_SPREAD = 0.15
 
 

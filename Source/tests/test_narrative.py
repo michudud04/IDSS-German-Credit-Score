@@ -4,7 +4,7 @@ import pytest
 
 from Source.decision.engine import decide
 from Source.decision.narrative import guard
-from Source.decision.narrative.facts import customer_facts, officer_facts
+from Source.decision.narrative.facts import ADVICE_ENOUGH, ADVICE_NOT_ENOUGH, customer_facts, officer_facts
 from Source.decision.narrative.writer import NarrativeWriter
 from Source.decision.policy import RiskPolicy
 from Source.decision.service import evaluate_decision, make_policy
@@ -76,8 +76,8 @@ def test_officer_facts_keep_everything_for_the_officer():
 
 
 def test_no_advice_in_an_approval_letter():
-    assert "what_could_improve_a_future_application" not in customer_facts(decide(probs(0.02), RiskPolicy()),
-                                                                           FACTORS, ADVICE)
+    facts = customer_facts(decide(probs(0.02), RiskPolicy()), FACTORS, ADVICE)
+    assert ADVICE_ENOUGH not in facts and ADVICE_NOT_ENOUGH not in facts
 
 
 # -- guard --------------------------------------------------------------------
@@ -226,3 +226,73 @@ def test_officer_llm_facts_leave_out_raw_form_values():
 def test_empty_lists_are_not_sent_to_the_llm():
     facts = customer_facts(decide(probs(0.02), RiskPolicy()))
     assert all(value for value in facts.values())
+
+
+# -- advice that is not enough on its own (C reports the strongest changes when nothing passes) --
+
+NOT_ENOUGH = [
+    AdviceItem([FeatureChange("MonthlyDebt", "Monthly debt payments", 2600, 0,
+                              "Lower monthly debt payments from $2,600 to $0")], 0.41, -0.37, False, 1.0),
+    AdviceItem([FeatureChange("RevUtil", "Revolving credit utilisation", 1.15, 0.0,
+                              "Lower utilisation from 115% to 0%")], 0.52, -0.26, False, 1.0),
+]
+
+
+def test_advice_is_split_by_whether_it_is_enough():
+    facts = customer_facts(decide(probs(0.6), RiskPolicy()), FACTORS, ADVICE + NOT_ENOUGH)
+    assert facts[ADVICE_ENOUGH] == ["Lower utilisation from 95% to 30%"]
+    assert "Lower monthly debt payments from $2,600 to $0" in facts[ADVICE_NOT_ENOUGH]
+
+
+def test_template_says_when_changes_are_not_enough():
+    decision = decide(probs(0.78), RiskPolicy())
+    letter = NarrativeWriter(backend=None).customer_letter(decision, FACTORS, NOT_ENOUGH)
+    assert "would not be enough on their own" in letter.text
+    assert "within our lending criteria" not in letter.text
+    facts = customer_facts(decision, FACTORS, NOT_ENOUGH)
+    assert guard.check_customer_letter(letter.text, facts, decision.outcome) == []
+
+
+def test_template_with_both_kinds_of_advice_passes_the_guard():
+    decision = decide(probs(0.6), RiskPolicy())
+    letter = NarrativeWriter(backend=None).customer_letter(decision, FACTORS, ADVICE + NOT_ENOUGH)
+    assert "within our lending criteria" in letter.text and "unlike the changes above" in letter.text
+    facts = customer_facts(decision, FACTORS, ADVICE + NOT_ENOUGH)
+    assert guard.check_customer_letter(letter.text, facts, decision.outcome) == []
+
+
+def test_guard_rejects_presenting_insufficient_advice_as_enough():
+    decision = decide(probs(0.78), RiskPolicy())
+    facts = customer_facts(decision, FACTORS, NOT_ENOUGH)
+    letter = GOOD_REJECTION.replace(
+        "Lowering your utilisation from 95% to 30% could improve a future application.",
+        "Lowering your monthly debt payments from $2,600 to $0 would be enough for a future application.")
+    assert any("enough" in i for i in guard.check_customer_letter(letter, facts, decision.outcome))
+    honest = GOOD_REJECTION.replace(
+        "Lowering your utilisation from 95% to 30% could improve a future application.",
+        "Lowering your monthly debt payments from $2,600 to $0 would lower the risk, but would not be enough "
+        "on its own.")
+    assert not any("enough" in i for i in guard.check_customer_letter(honest, facts, decision.outcome))
+
+
+def test_guard_rejects_any_promise_of_approval():
+    decision = decide(probs(0.6), RiskPolicy())
+    facts = customer_facts(decision, FACTORS, ADVICE)
+    letter = GOOD_REJECTION.replace("could improve a future application", "will guarantee approval next time")
+    assert any("promises" in i for i in guard.check_customer_letter(letter, facts, decision.outcome))
+
+
+def test_lateness_code_flag_is_never_shown_to_the_customer():
+    flag = KeyFactor("LateCodeFlag", "Unexplained lateness code in records", 1.0, "yes", "increases_risk",
+                     0.2, {}, False, False)
+    facts = customer_facts(decide(probs(0.6), RiskPolicy()), [flag] + FACTORS)
+    assert "lateness code" not in str(facts).lower()
+    officer = officer_facts(decide(probs(0.6), RiskPolicy()), [flag] + FACTORS)
+    assert any("lateness code" in f["factor"].lower() for f in officer["key_factors"])
+
+
+def test_estimated_income_with_no_value_is_not_declared():
+    blank = KeyFactor("MonthlyIncome", "Monthly income", None, "$4,458 (estimated)", "increases_risk",
+                      0.03, {}, True, False)
+    facts = customer_facts(decide(probs(0.6), RiskPolicy()), [blank])
+    assert facts["factors_raising_risk"] == [{"factor": "Monthly income", "value": "not declared"}]

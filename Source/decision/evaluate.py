@@ -6,6 +6,11 @@
 For each slider setting it reports how many applicants are approved, sent to
 review and rejected, how many defaulters slip through the automatic approvals,
 and the cost of the automatic decisions in units of one lost good customer.
+
+Validation at the default setting (cost ratio 4, cut-off 20%): 86.3% approved,
+8.0% review (grey zone 3.5%, debt above income 3.2%, unusual 1.5%, models
+disagree 1.4%; an applicant can have several reasons), 5.7% rejected.
+Defaulters among the automatic approvals: 3.2% (6.7% overall).
 """
 
 from __future__ import annotations

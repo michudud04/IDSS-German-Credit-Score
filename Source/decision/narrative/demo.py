@@ -4,8 +4,8 @@
     IDSS_LLM_BACKEND=template python -m Source.decision.narrative.demo
 
 Prints the decision, both texts, and whether each text came from the LLM or
-the template (and why). Key factors and advice are not wired yet (C's
-modules), so the texts only use the decision, similar cases and warning.
+the template (and why). Uses C's key factors, advice, similar cases and
+unusual-case warning, exactly as the app does.
 """
 
 from __future__ import annotations
@@ -17,7 +17,10 @@ import pandas as pd
 
 from Source.decision.models import load_risk_pipeline
 from Source.decision.narrative.writer import NarrativeWriter
+from Source.decision.policy import RiskPolicy
 from Source.decision.service import evaluate_decision
+from Source.explain.advice import generate_advice
+from Source.explain.factors import explain_factors
 from Source.explain.similar import SimilarCaseFinder
 from Source.explain.unusual import load_detector
 
@@ -43,9 +46,12 @@ def main() -> None:
         frame = pd.DataFrame([inputs])
         readable, scaled = pipeline.preprocessor.prepare_customer(frame)
         start = time.perf_counter()
+        policy = RiskPolicy()
         result = evaluate_decision(inputs=inputs, probabilities=pipeline.predict(frame).iloc[0].to_dict(),
                                    unusual=detector.check(readable, scaled)[0], similar_cases=finder.find(scaled)[0],
-                                   writer=writer)
+                                   key_factors=explain_factors(pipeline, frame)[0],
+                                   advice=generate_advice(pipeline, frame, policy=policy)[0],
+                                   cost_ratio=policy.cost_ratio, writer=writer)
         print("=" * 80)
         print(f"{name}: {result['decision'].upper()}  ({time.perf_counter() - start:.1f}s)")
         for key in ("officer_summary", "customer_letter"):

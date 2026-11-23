@@ -18,6 +18,8 @@ from __future__ import annotations
 import json
 import re
 
+from Source.decision.narrative.facts import ADVICE_ENOUGH, ADVICE_NOT_ENOUGH
+
 # A topic is allowed only if it already appears in the facts (e.g. the legal-age rule may mention age).
 CUSTOMER_FORBIDDEN_TOPICS = {
     "age": r"\b(age|aged|years? old|young|younger|older|elderly|born|retire\w*)\b",
@@ -40,6 +42,12 @@ OUTCOME_PATTERNS = {
 # Advice-like wording, allowed in the letter only when the facts contain advice.
 ADVICE_WORDING = (r"\b(consider(ing)?|we (recommend|suggest|advise|encourage)|tips?|to improve|you (should|could|may "
                   r"want to|might)|keep(ing)? (your )?\w+ low|make (timely|regular) payments|monitor\w*)\b")
+
+# Never allowed in a letter: the bank cannot promise a future decision.
+PROMISE = r"\b(guarantee\w*|will (be|get) approved|(ensure|secure)s? (your |an )?approval|certain(ly)? (be )?approved)\b"
+# Allowed only when some change is enough on its own ("would not be enough" does not match).
+ENOUGH_CLAIM = (r"\b(would|will|could|should|may|might) (be enough|be sufficient|suffice|qualify|"
+                r"bring (a|your) (future )?application within)\b")
 
 # Officer sections that must not appear when the facts have nothing for them.
 OFFICER_SECTION_TOPICS = {
@@ -81,10 +89,17 @@ def check_customer_letter(text: str, facts: dict, outcome: str) -> list[str]:
     found = re.search(rules["forbidden"], text, flags=re.IGNORECASE)
     if found:
         issues.append(f"contradicts the outcome {outcome} ('{found.group(0)}')")
-    if not facts.get("what_could_improve_a_future_application"):
+    if not (facts.get(ADVICE_ENOUGH) or facts.get(ADVICE_NOT_ENOUGH)):
         found = re.search(ADVICE_WORDING, text, flags=re.IGNORECASE)
         if found:
             issues.append(f"gives advice that is not in the facts ('{found.group(0)}'); give no advice at all")
+    found = re.search(PROMISE, text, flags=re.IGNORECASE)
+    if found:
+        issues.append(f"promises an approval ('{found.group(0)}'); never promise or guarantee approval")
+    if not facts.get(ADVICE_ENOUGH):
+        found = re.search(ENOUGH_CLAIM, text, flags=re.IGNORECASE)
+        if found:
+            issues.append(f"presents a change as enough ('{found.group(0)}'), but no change is enough on its own")
     issues += _common_issues(text, facts, min_len=150, max_len=2500)
     return issues
 
