@@ -6,8 +6,8 @@ import pytest
 
 from Source import config
 from Source.data.preprocessing import Preprocessor, load_split
-from Source.explain.unusual import (DETECTOR_FILE, SYNTHETIC_PROFILES, TRIGGER_CODE, TRIGGER_FAR, TRIGGER_RANGE,
-                                    UnusualCaseDetector)
+from Source.explain.unusual import (DETECTOR_FILE, SYNTHETIC_PROFILES, TRIGGER_CODE, TRIGGER_EXTREME, TRIGGER_FAR,
+                                    TRIGGER_RANGE, UnusualCaseDetector)
 
 pytestmark = pytest.mark.skipif(not (config.PREPROCESSING_FILE.exists() and DETECTOR_FILE.exists()),
                                 reason="run `python -m Source.data.build_dataset` and `python -m Source.explain.unusual`")
@@ -38,6 +38,20 @@ def test_extreme_history_is_far_from_past_applicants(detector, prep):
     result = check(detector, prep, SYNTHETIC_PROFILES["many late payments"])
     assert result.is_unusual and TRIGGER_FAR in result.triggers
     assert any("higher than 99.9%" in reason for reason in result.reasons)
+
+
+def test_single_extreme_value_is_unusual(detector, prep):
+    """A $400k income is not far from past applicants (some earned that much) but is beyond 99.9%."""
+    result = check(detector, prep, SYNTHETIC_PROFILES["very high income"])
+    assert result.is_unusual and TRIGGER_EXTREME in result.triggers
+    assert any(reason.startswith("Monthly income") and "99.9%" in reason for reason in result.reasons)
+
+
+def test_extreme_age_is_unusual(detector, prep):
+    """Team decision: age and dependents count as extreme values too."""
+    result = check(detector, prep, SYNTHETIC_PROFILES["very old"])
+    assert result.is_unusual and result.triggers == [TRIGGER_EXTREME]
+    assert any(reason.startswith("Age") for reason in result.reasons)
 
 
 def test_value_outside_observed_range(detector, prep):
