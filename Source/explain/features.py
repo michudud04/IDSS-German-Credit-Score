@@ -10,6 +10,8 @@ from __future__ import annotations
 import math
 from dataclasses import dataclass
 
+import pandas as pd
+
 
 @dataclass(frozen=True)
 class FieldInfo:
@@ -36,6 +38,14 @@ FIELDS: dict[str, FieldInfo] = {
 # Fields explained by the key-factor module (officer form fields + the data-quality flag).
 EXPLAINED_FIELDS = list(FIELDS)
 ACTIONABLE_FIELDS = [name for name, info in FIELDS.items() if info.actionable]
+
+
+def as_explained_frame(inputs: pd.DataFrame) -> pd.DataFrame:
+    """Applicant inputs (INPUT_FIELDS, optional LateCodeFlag) in the EXPLAINED_FIELDS order, as floats."""
+    frame = inputs.copy()
+    if "LateCodeFlag" not in frame:
+        frame["LateCodeFlag"] = 0.0
+    return frame[EXPLAINED_FIELDS].astype(float)
 
 
 def format_value(field: str, value: float | None, estimated: bool = False) -> str:

@@ -36,7 +36,7 @@ import shap
 
 from Source import config
 from Source.data.preprocessing import LATE_COLS, load_split
-from Source.explain.features import EXPLAINED_FIELDS, FIELDS, format_value
+from Source.explain.features import EXPLAINED_FIELDS, FIELDS, as_explained_frame, format_value
 from Source.explain.pipeline import COMBINED, RiskPipeline
 from Source.explain.types import KeyFactor
 
@@ -52,14 +52,6 @@ def to_form(readable: pd.DataFrame) -> pd.DataFrame:
     form.loc[readable["DependentsMissing"] == 1, "Dependents"] = np.nan
     form.loc[readable["LateCodeFlag"] == 1, LATE_COLS] = np.nan
     return form
-
-
-def as_explained_frame(inputs: pd.DataFrame) -> pd.DataFrame:
-    """Applicant inputs (INPUT_FIELDS, optional LateCodeFlag) in the explained column order."""
-    frame = inputs.copy()
-    if "LateCodeFlag" not in frame:
-        frame["LateCodeFlag"] = 0.0
-    return frame[EXPLAINED_FIELDS].astype(float)
 
 
 class FactorExplainer:
