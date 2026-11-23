@@ -28,7 +28,7 @@ FIELDS: dict[str, FieldInfo] = {
     "Late30_59":       FieldInfo("Payments 30-59 days late (last 2 years)", "count", actionable=False, sensitive=False),
     "Late60_89":       FieldInfo("Payments 60-89 days late (last 2 years)", "count", actionable=False, sensitive=False),
     "Late90":          FieldInfo("Payments 90+ days late", "count", actionable=False, sensitive=False),
-    "LateCodeFlag":    FieldInfo("Unexplained lateness code in records", "count", actionable=False, sensitive=False),
+    "LateCodeFlag":    FieldInfo("Unexplained lateness code in records", "flag", actionable=False, sensitive=False),
     "Age":             FieldInfo("Age", "years", actionable=False, sensitive=True),
     "Dependents":      FieldInfo("Number of dependents", "count", actionable=False, sensitive=True),
 }
@@ -43,6 +43,8 @@ def format_value(field: str, value: float | None, estimated: bool = False) -> st
     if value is None or (isinstance(value, float) and math.isnan(value)):
         return "not declared"
     unit = FIELDS[field].unit
+    if unit == "flag":
+        return "yes" if value else "no"
     if unit == "ratio":
         text = f"{value:.0%}"
     elif unit == "money":
