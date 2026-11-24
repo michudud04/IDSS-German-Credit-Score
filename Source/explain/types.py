@@ -8,6 +8,8 @@ These are the parts of the shared case result owned by Person C. The overall
     similar_cases   -> SimilarCases
     is_unusual      -> UnusualCheck.is_unusual (reasons in UnusualCheck.reasons)
 
+``explain_case`` returns all of them at once as a ``CaseExplanation``.
+
 All probabilities are probabilities of default (0..1). Contributions are in
 probability units: +0.04 means "raised the default probability by 4 points".
 """
@@ -81,8 +83,23 @@ class UnusualCheck:
     score: float                    # mean distance to the nearest training applicants
     threshold: float                # score above this is unusual (set on the validation split)
     reasons: list[str] = field(default_factory=list)  # readable reasons, e.g. range violations
-    # Machine-readable causes: "far_from_past_applicants", "outside_observed_range", "lateness_code".
+    # Machine-readable causes: "far_from_past_applicants", "extreme_value", "outside_observed_range",
+    # "lateness_code".
     triggers: list[str] = field(default_factory=list)
+
+    def to_dict(self) -> dict:
+        return asdict(self)
+
+
+@dataclass
+class CaseExplanation:
+    """Everything Person C produces for one applicant (returned by ``explain_case``)."""
+
+    probabilities: dict[str, float]  # probability of default per model and "combined"
+    key_factors: list[KeyFactor]     # top factors, strongest first
+    advice: list[AdviceItem]         # what-if options, passing ones first (empty if the applicant passes)
+    similar_cases: SimilarCases
+    unusual: UnusualCheck
 
     def to_dict(self) -> dict:
         return asdict(self)

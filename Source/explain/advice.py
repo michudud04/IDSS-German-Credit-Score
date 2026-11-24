@@ -187,17 +187,19 @@ def resolve_policy(policy=None, cutoff: float | None = None, review_margin: floa
 
 
 def generate_advice(pipeline: RiskPipeline, inputs: pd.DataFrame, cutoff: float | None = None,
-                    review_margin: float | None = None, policy=None,
-                    max_items: int = MAX_ITEMS) -> list[list[AdviceItem]]:
+                    review_margin: float | None = None, policy=None, max_items: int = MAX_ITEMS,
+                    base_probs: np.ndarray | None = None) -> list[list[AdviceItem]]:
     """Entry point used by the app: advice for each applicant (row) in ``inputs``.
 
     The slider is given either as ``policy`` (a RiskPolicy) or as ``cutoff`` and
     ``review_margin`` with the app's convention (absolute half-width, e.g. 0.03).
     Without any of them, the decision step's default policy is used.
+    ``base_probs`` may hold the applicants' combined probabilities if already computed.
     """
     policy = resolve_policy(policy, cutoff, review_margin)
     frame = as_explained_frame(inputs)
-    base_probs = pipeline.predict(frame)[COMBINED].to_numpy()
+    if base_probs is None:
+        base_probs = pipeline.predict(frame)[COMBINED].to_numpy()
 
     results = []
     for (_, row), base in zip(frame.iterrows(), base_probs):

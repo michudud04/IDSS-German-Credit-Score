@@ -123,9 +123,17 @@ class UnusualCaseDetector:
         distances, _ = self.finder.neighbours(scaled, self.settings["k"])
         return distances.mean(axis=1)
 
-    def check(self, readable: pd.DataFrame, scaled: pd.DataFrame) -> list[UnusualCheck]:
-        """One UnusualCheck per applicant, from the two tables of ``prepare_customer``."""
-        distances, positions = self.finder.neighbours(scaled, self.settings["k"])
+    def check(self, readable: pd.DataFrame, scaled: pd.DataFrame,
+              neighbours: tuple[np.ndarray, np.ndarray] | None = None) -> list[UnusualCheck]:
+        """One UnusualCheck per applicant, from the two tables of ``prepare_customer``.
+
+        ``neighbours`` may hold a search already done with ``finder.neighbours()`` (at least
+        ``k`` per applicant), so ``explain_case`` shares one search with the similar cases.
+        """
+        k = self.settings["k"]
+        if neighbours is None:
+            neighbours = self.finder.neighbours(scaled, k)
+        distances, positions = (part[:, :k] for part in neighbours)
         scores = distances.mean(axis=1)
         points = self.finder._embed(scaled)
 

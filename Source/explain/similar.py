@@ -72,9 +72,16 @@ class SimilarCaseFinder:
         """Distances and row positions of the ``k`` nearest training applicants, per query row."""
         return self.index.kneighbors(self._embed(scaled), n_neighbors=k)
 
-    def find(self, scaled: pd.DataFrame) -> list[SimilarCases]:
-        """Similar cases for each applicant in a model-scale table (from ``prepare_customer``)."""
-        distances, positions = self.neighbours(scaled, self.neighbourhood_size)
+    def find(self, scaled: pd.DataFrame,
+             neighbours: tuple[np.ndarray, np.ndarray] | None = None) -> list[SimilarCases]:
+        """Similar cases for each applicant in a model-scale table (from ``prepare_customer``).
+
+        ``neighbours`` may hold a search already done with ``neighbours()`` (at least
+        ``neighbourhood_size`` per applicant), so ``explain_case`` searches only once.
+        """
+        if neighbours is None:
+            neighbours = self.neighbours(scaled, self.neighbourhood_size)
+        distances, positions = (part[:, :self.neighbourhood_size] for part in neighbours)
         results = []
         for dist_row, pos_row in zip(distances, positions):
             shown = [
