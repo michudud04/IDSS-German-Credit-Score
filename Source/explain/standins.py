@@ -1,10 +1,13 @@
-"""TEMPORARY stand-in models so the explanation modules can be built before
-Person B delivers the real, tuned and calibrated models.
+"""RETIRED stand-in models, kept only until nothing imports them any more.
 
-They are deliberately simple and untuned, trained without class weights so
-that their probabilities are roughly honest. They are cached under
-``data/cache/`` (git-ignored) and must never be shipped or evaluated as the
-system's models.
+They let the explanation modules be built before Person B delivered the real
+models. Part C no longer uses them: every C module, script and test now runs
+on B's final models (``Source.decision.models.load_risk_pipeline``). The file
+still exists only because the app's orchestrator (Person E) imports it as a
+fallback; delete it once that import is removed.
+
+They are simple and untuned, cached under ``data/cache/`` (git-ignored), and
+must never be shipped or evaluated as the system's models.
 
     python -m Source.explain.standins     # train, cache, print validation AUC
 """

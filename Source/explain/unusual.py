@@ -231,7 +231,7 @@ SYNTHETIC_PROFILES = {
 def main() -> None:
     from sklearn.metrics import brier_score_loss, roc_auc_score
 
-    from Source.explain.standins import load_standin_pipeline
+    from Source.decision.models import load_risk_pipeline
 
     finder = SimilarCaseFinder.from_training_data()
     train_readable = load_split("train", "readable")
@@ -247,10 +247,10 @@ def main() -> None:
     for trigger in (TRIGGER_FAR, TRIGGER_EXTREME, TRIGGER_RANGE, TRIGGER_CODE):
         print(f"  {trigger:26s} {np.mean([trigger in c.triggers for c in checks]):.2%}")
 
-    # Are the models less reliable on flagged applicants? (stand-in models for now)
-    probs = load_standin_pipeline().predict(val_readable[INPUT_FIELDS + ["LateCodeFlag"]])["combined"]
+    # Are the models less reliable on flagged applicants? (B's final ensemble)
+    probs = load_risk_pipeline().predict(val_readable[INPUT_FIELDS + ["LateCodeFlag"]])["combined"]
     y = val_readable[TARGET].to_numpy()
-    print("\nStand-in combined model on validation applicants:")
+    print("\nFinal ensemble on validation applicants:")
     for name, mask in [("not flagged", ~flagged), ("flagged", flagged)]:
         print(f"  {name:12s} n={mask.sum():6,d}  default rate {y[mask].mean():.1%}  "
               f"mean predicted {probs[mask].mean():.1%}  AUC {roc_auc_score(y[mask], probs[mask]):.3f}  "
