@@ -6,7 +6,10 @@ factors including sensitive ones, similar cases, the unusual-case warning).
 Customer facts: only what the applicant may be told:
 - reasons that have a ``customer_text`` (internal ones like model disagreement have none);
 - key factors that are not sensitive (never age or dependents), as the main reasons;
-- advice that only changes actionable, non-sensitive fields;
+- advice that only changes actionable, non-sensitive fields, split into changes
+  that could be enough for approval and changes that help but are not enough
+  on their own (C reports the strongest changes when nothing is enough, and
+  these can be large, e.g. debt down to $0);
 - never similar cases (they hold other customers' data), never probabilities.
 
 Because the LLM never receives forbidden data, it cannot leak it; the guard
@@ -22,6 +25,13 @@ from Source.explain.types import AdviceItem, KeyFactor, SimilarCases, UnusualChe
 MAX_FACTORS = 5
 MAX_CUSTOMER_FACTORS = 3
 MAX_ADVICE = 3
+
+# Keys of the customer facts that hold advice (used by the prompt, the guard and the template).
+ADVICE_ENOUGH = "changes_that_could_be_enough"
+ADVICE_NOT_ENOUGH = "changes_that_help_but_are_not_enough_alone"
+
+# Data-quality flags are not something the applicant did: never shown to the customer.
+CUSTOMER_HIDDEN_FIELDS = {"LateCodeFlag"}
 
 
 def _pct(p: float) -> str:
@@ -69,11 +79,17 @@ def officer_facts(decision: Decision, key_factors: list[KeyFactor] | None = None
         facts["unusual_case_warning"] = unusual.reasons
     if advice:
         facts["what_if_advice"] = [
-            {"changes": [c.description for c in a.changes], "new_probability": _pct(a.new_prob),
+            {"change": join_changes(a), "new_probability": _pct(a.new_prob),
              "would_be_approved_automatically": a.passes_cutoff}
             for a in advice[:MAX_ADVICE]
         ]
     return facts
+
+
+def join_changes(item: AdviceItem) -> str:
+    """'Lower utilisation from 90% to 85% and raise monthly income from $3,000 to $3,300'."""
+    texts = [c.description for c in item.changes]
+    return " and ".join([texts[0]] + [t[:1].lower() + t[1:] for t in texts[1:]])
 
 
 def _customer_value(f: KeyFactor) -> str:
@@ -96,7 +112,7 @@ def customer_facts(decision: Decision, key_factors: list[KeyFactor] | None = Non
 
     # The applicant is entitled to the main reasons, actionable or not (e.g. past late payments),
     # but never to sensitive ones. Advice below is restricted further to actionable fields.
-    allowed = [f for f in (key_factors or []) if not f.sensitive]
+    allowed = [f for f in (key_factors or []) if not f.sensitive and f.feature not in CUSTOMER_HIDDEN_FIELDS]
     ranked = sorted(allowed, key=lambda f: abs(f.contribution), reverse=True)
     facts = {
         "outcome": {"approve": "approved", "review": "under personal review by an advisor",
@@ -108,12 +124,12 @@ def customer_facts(decision: Decision, key_factors: list[KeyFactor] | None = Non
                                    if f.direction == "decreases_risk"][:2],
     }
     if decision.outcome != "approve" and advice:
-        usable = [a for a in advice if _advice_is_allowed(a)]
-        usable.sort(key=lambda a: (not a.passes_cutoff, a.effort))
-        facts["what_could_improve_a_future_application"] = [
-            {"changes": [c.description for c in a.changes],
-             "enough_for_approval": a.passes_cutoff}
-            for a in usable[:MAX_ADVICE]
-        ]
+        # Keep C's order (enough first, cheapest first; then the strongest), so the officer and the
+        # customer see the same options.
+        chosen = [a for a in advice if _advice_is_allowed(a)][:MAX_ADVICE]
+        # Two separate lists, so neither the LLM nor the template can present a change
+        # that is not enough on its own as a way to get approved.
+        facts[ADVICE_ENOUGH] = [join_changes(a) for a in chosen if a.passes_cutoff]
+        facts[ADVICE_NOT_ENOUGH] = [join_changes(a) for a in chosen if not a.passes_cutoff]
     # Empty lists make the model write "no factors were identified..."; leave them out.
     return {key: value for key, value in facts.items() if value}

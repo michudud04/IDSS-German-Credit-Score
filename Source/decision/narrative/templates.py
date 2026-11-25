@@ -6,6 +6,8 @@ the wording is less natural.
 
 from __future__ import annotations
 
+from Source.decision.narrative.facts import ADVICE_ENOUGH, ADVICE_NOT_ENOUGH
+
 OUTCOME_SENTENCE = {
     "approve": "We are pleased to inform you that your loan application has been approved.",
     "review": "Your loan application will be reviewed personally by one of our advisors before a decision "
@@ -14,22 +16,31 @@ OUTCOME_SENTENCE = {
 }
 
 
+def _bullets(factors: list[dict]) -> str:
+    return "\n".join(f"- {f['factor']}: {f['value']}" for f in factors)
+
+
 def customer_letter(facts: dict, outcome: str) -> str:
     parts = ["Dear applicant,", OUTCOME_SENTENCE[outcome]]
     if facts.get("reasons"):
         parts.append(" ".join(facts["reasons"]))
     raising = facts.get("factors_raising_risk") or []
     if raising and outcome != "approve":
-        listed = "; ".join(f"{f['factor'].lower()} ({f['value']})" for f in raising)
-        parts.append(f"The points that weighed most on our assessment were: {listed}.")
+        parts.append("The points that weighed most on our assessment were:\n" + _bullets(raising))
     favour = facts.get("factors_in_your_favour") or []
     if favour:
-        listed = "; ".join(f"{f['factor'].lower()} ({f['value']})" for f in favour)
-        parts.append(f"Points in your favour: {listed}.")
-    advice = facts.get("what_could_improve_a_future_application") or []
-    if advice:
-        lines = [f"- {' and '.join(a['changes'])}" for a in advice]
-        parts.append("The following changes could improve a future application:\n" + "\n".join(lines))
+        parts.append("Points in your favour:\n" + _bullets(favour))
+    enough = facts.get(ADVICE_ENOUGH) or []
+    if enough:
+        target = "your application" if outcome == "review" else "a future application"
+        intro = (f"Based on our current assessment, any one of the following changes could bring {target} "
+                 "within our lending criteria (an application is always assessed in full):")
+        parts.append(intro + "\n" + "\n".join(f"- {change}" for change in enough))
+    not_enough = facts.get(ADVICE_NOT_ENOUGH) or []
+    if not_enough:
+        intro = ("The following changes would lower the assessed risk, but would not be enough on their own"
+                 + (":" if not enough else ", unlike the changes above:"))
+        parts.append(intro + "\n" + "\n".join(f"- {change}" for change in not_enough))
     parts.append("If you have questions or wish to provide additional information, please contact your "
                  "branch.\n\nKind regards,\nThe Credit Team")
     return "\n\n".join(parts)
@@ -61,6 +72,6 @@ def officer_summary(facts: dict) -> str:
         lines += ["", "What-if advice for the customer:"]
         for a in facts["what_if_advice"]:
             ok = "would be approved automatically" if a["would_be_approved_automatically"] else "not enough alone"
-            lines.append(f"- {' and '.join(a['changes'])}: probability {a['new_probability']} ({ok})")
+            lines.append(f"- {a['change']}: probability {a['new_probability']} ({ok})")
     lines += ["", "This is a recommendation; the final decision rests with the officer."]
     return "\n".join(lines)

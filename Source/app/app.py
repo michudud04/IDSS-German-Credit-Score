@@ -233,8 +233,16 @@ def main() -> None:
     render_decision_box(result)
 
     if result.is_unusual:
+        trigger_labels = {
+            "far_from_past_applicants": "Far from past applicants",
+            "extreme_value": "Extreme value",
+            "outside_observed_range": "Outside observed range",
+            "lateness_code": "Unexplained lateness code (96/98)",
+        }
+        triggers_text = ", ".join(trigger_labels.get(t, t) for t in result.unusual.triggers)
         st.warning(
             "**Unusual applicant profile**\n\n"
+            + (f"Triggers: {triggers_text}\n\n" if triggers_text else "")
             + "\n".join(f"- {r}" for r in result.unusual.reasons)
             + f"\n\nDistance score: {result.unusual.score:.2f} (threshold: {result.unusual.threshold:.2f})."
         )

@@ -72,7 +72,7 @@ class IDSSOrchestrator:
         disagreement = float(max(per_model_vals) - min(per_model_vals)) if per_model_vals else 0.0
 
         key_factors, advice, similar_cases, unusual = self._run_explanations(
-            input_df, readable_df, scaled_df, risk_cutoff
+            input_df, readable_df, scaled_df, risk_cutoff, review_margin
         )
 
         decision, reasons, rules, officer_summary, customer_letter = self._run_decision(
@@ -127,6 +127,7 @@ class IDSSOrchestrator:
         readable_df: pd.DataFrame,
         scaled_df: pd.DataFrame,
         risk_cutoff: float,
+        review_margin: float,
     ) -> tuple[list[KeyFactor], list[AdviceItem], SimilarCases, UnusualCheck]:
         explain_case = _load_optional_callable("Source.explain", "explain_case")
         if explain_case is not None:
@@ -136,6 +137,7 @@ class IDSSOrchestrator:
                 self.unusual_detector,
                 input_df,
                 cutoff=risk_cutoff,
+                review_margin=review_margin,
             )
             return exp.key_factors, exp.advice, exp.similar_cases, exp.unusual
 
@@ -149,7 +151,7 @@ class IDSSOrchestrator:
 
         generate_advice = _load_optional_callable("Source.explain.advice", "generate_advice")
         advice: list[AdviceItem] = (
-            generate_advice(self.pipeline, input_df, cutoff=risk_cutoff)[0]
+            generate_advice(self.pipeline, input_df, cutoff=risk_cutoff, review_margin=review_margin)[0]
             if generate_advice is not None
             else []
         )
