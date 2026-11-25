@@ -5,22 +5,29 @@ unlike any of them, the predicted probability is an extrapolation and should
 not be trusted on its own, so the decision step (Person D) sends the case to
 review.
 
-An applicant is unusual if any of three triggers fires:
+An applicant is unusual if any of four triggers fires:
 
 1. ``far_from_past_applicants``: the mean distance to the ``k`` most similar
    training applicants is above a threshold. It uses the same comparison
    space as the similar cases (see similar.py). The threshold is the 99th
    percentile of this score on the validation split, so about 1% of ordinary
-   applicants are flagged by design. It catches single extreme values (on the
-   log scale) as well as rare combinations of ordinary values.
-2. ``outside_observed_range``: a value is lower or higher than anything in
+   applicants are flagged by design. It mainly catches rare combinations of
+   ordinary values.
+2. ``extreme_value``: a single value is higher than 99.9% (or lower than
+   99.9%) of past applicants, e.g. a monthly income of $400,000. The distance
+   in (1) misses these when a handful of past applicants had similar values.
+   As decided by the team, this includes age and dependents, so a very old
+   applicant or one with many dependents is also sent to review.
+3. ``outside_observed_range``: a value is lower or higher than anything in
    the training data (e.g. age 19, while the data starts at 21).
-3. ``lateness_code``: the credit record holds the codes 96/98, whose meaning
+4. ``lateness_code``: the credit record holds the codes 96/98, whose meaning
    is undocumented (EDA section 4.2).
 
 Each flagged case gets plain-language reasons: the values that are extreme
 compared with past applicants or, if every value is ordinary, the fields in
 which the applicant differs most from the most similar past applicants.
+Values the applicant left blank (income, dependents) are estimates and are
+never checked against the ranges.
 
 The fitted settings are saved as readable JSON in
 ``Models/explain/unusual_detector.json``. Refit after any change to the data
@@ -45,8 +52,12 @@ from Source.explain.types import UnusualCheck
 DETECTOR_FILE = config.MODELS_DIR / "explain" / "unusual_detector.json"
 
 TRIGGER_FAR = "far_from_past_applicants"
+TRIGGER_EXTREME = "extreme_value"
 TRIGGER_RANGE = "outside_observed_range"
 TRIGGER_CODE = "lateness_code"
+
+# A value below the first or above the second training quantile is "extreme".
+EXTREME_QUANTILES = (0.001, 0.999)
 
 # Labels for the profile columns that are not officer input fields.
 PROFILE_LABELS = {name: info.label for name, info in FIELDS.items()} | {"IncomeMissing": "Income not declared"}
@@ -68,22 +79,25 @@ class UnusualCaseDetector:
         threshold = float(np.quantile(distances.mean(axis=1), 1 - flag_rate))
 
         values = train_readable[INPUT_FIELDS]
+        low, high = EXTREME_QUANTILES
         fields = {
             name: {
                 "min": float(values[name].min()),
                 "max": float(values[name].max()),
-                "q_low": float(values[name].quantile(0.001)),
-                "q_high": float(values[name].quantile(0.999)),
+                "q_low": float(values[name].quantile(low)),
+                "q_high": float(values[name].quantile(high)),
             }
             for name in INPUT_FIELDS
         }
         coded = train_readable["LateCodeFlag"] == 1
         settings = {
-            "description": "Unusual-case warning. A score above distance_threshold, a value outside "
-                           "[min, max], or a lateness code makes an applicant unusual.",
+            "description": "Unusual-case warning. An applicant is unusual if the distance score is above "
+                           "distance_threshold, a value lies outside [q_low, q_high] (extreme) or outside "
+                           "[min, max] (never seen), or the record holds a lateness code.",
             "k": k,
             "flag_rate": flag_rate,
             "distance_threshold": threshold,
+            "extreme_quantiles": list(EXTREME_QUANTILES),
             "profile_columns": PROFILE_COLUMNS,
             "fields": fields,
             "lateness_code_default_rate": float(train_readable.loc[coded, TARGET].mean()),
@@ -109,9 +123,17 @@ class UnusualCaseDetector:
         distances, _ = self.finder.neighbours(scaled, self.settings["k"])
         return distances.mean(axis=1)
 
-    def check(self, readable: pd.DataFrame, scaled: pd.DataFrame) -> list[UnusualCheck]:
-        """One UnusualCheck per applicant, from the two tables of ``prepare_customer``."""
-        distances, positions = self.finder.neighbours(scaled, self.settings["k"])
+    def check(self, readable: pd.DataFrame, scaled: pd.DataFrame,
+              neighbours: tuple[np.ndarray, np.ndarray] | None = None) -> list[UnusualCheck]:
+        """One UnusualCheck per applicant, from the two tables of ``prepare_customer``.
+
+        ``neighbours`` may hold a search already done with ``finder.neighbours()`` (at least
+        ``k`` per applicant), so ``explain_case`` shares one search with the similar cases.
+        """
+        k = self.settings["k"]
+        if neighbours is None:
+            neighbours = self.finder.neighbours(scaled, k)
+        distances, positions = (part[:, :k] for part in neighbours)
         scores = distances.mean(axis=1)
         points = self.finder._embed(scaled)
 
@@ -127,14 +149,16 @@ class UnusualCaseDetector:
                 triggers.append(TRIGGER_RANGE)
                 reasons += out_of_range
 
+            extreme = self._extreme_reasons(row, known)
+            if extreme:
+                triggers.append(TRIGGER_EXTREME)
+                reasons += extreme
+
             if scores[i] > self.threshold:
                 triggers.append(TRIGGER_FAR)
                 reasons.append(f"No past applicant has a similar profile (distance score {scores[i]:.2f}; "
                                f"99% of ordinary applicants score below {self.threshold:.2f}).")
-                extreme = self._extreme_reasons(row, known)
-                if extreme:
-                    reasons += extreme
-                elif not out_of_range:
+                if not (out_of_range or extreme):
                     reasons.append(self._combination_reason(points[i], positions[i]))
 
             if row["LateCodeFlag"] == 1:
@@ -204,6 +228,8 @@ SYNTHETIC_PROFILES = {
                                MonthlyDebt=1200, OpenLines=4, RealEstateLines=0, Dependents=2),
     "young with many mortgages": dict(RevUtil=0.20, Age=23, Late30_59=0, Late60_89=0, Late90=0, MonthlyIncome=2500,
                                       MonthlyDebt=900, OpenLines=12, RealEstateLines=8, Dependents=0),
+    "very old": dict(RevUtil=0.05, Age=96, Late30_59=0, Late60_89=0, Late90=0, MonthlyIncome=3000,
+                     MonthlyDebt=400, OpenLines=4, RealEstateLines=0, Dependents=0),
     "lateness codes": dict(RevUtil=1.0, Age=30, Late30_59=np.nan, Late60_89=np.nan, Late90=np.nan,
                            MonthlyIncome=2200, MonthlyDebt=0, OpenLines=0, RealEstateLines=0, Dependents=0,
                            LateCodeFlag=1),
@@ -213,7 +239,7 @@ SYNTHETIC_PROFILES = {
 def main() -> None:
     from sklearn.metrics import brier_score_loss, roc_auc_score
 
-    from Source.explain.standins import load_standin_pipeline
+    from Source.decision.models import load_risk_pipeline
 
     finder = SimilarCaseFinder.from_training_data()
     train_readable = load_split("train", "readable")
@@ -226,13 +252,13 @@ def main() -> None:
     checks = detector.check(val_readable, val_scaled)
     flagged = np.array([c.is_unusual for c in checks])
     print(f"Validation applicants flagged: {flagged.mean():.2%} ({flagged.sum()} of {len(flagged):,})")
-    for trigger in (TRIGGER_FAR, TRIGGER_RANGE, TRIGGER_CODE):
+    for trigger in (TRIGGER_FAR, TRIGGER_EXTREME, TRIGGER_RANGE, TRIGGER_CODE):
         print(f"  {trigger:26s} {np.mean([trigger in c.triggers for c in checks]):.2%}")
 
-    # Are the models less reliable on flagged applicants? (stand-in models for now)
-    probs = load_standin_pipeline().predict(val_readable[INPUT_FIELDS + ["LateCodeFlag"]])["combined"]
+    # Are the models less reliable on flagged applicants? (B's final ensemble)
+    probs = load_risk_pipeline().predict(val_readable[INPUT_FIELDS + ["LateCodeFlag"]])["combined"]
     y = val_readable[TARGET].to_numpy()
-    print("\nStand-in combined model on validation applicants:")
+    print("\nFinal ensemble on validation applicants:")
     for name, mask in [("not flagged", ~flagged), ("flagged", flagged)]:
         print(f"  {name:12s} n={mask.sum():6,d}  default rate {y[mask].mean():.1%}  "
               f"mean predicted {probs[mask].mean():.1%}  AUC {roc_auc_score(y[mask], probs[mask]):.3f}  "

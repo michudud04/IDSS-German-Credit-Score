@@ -10,6 +10,8 @@ from __future__ import annotations
 import math
 from dataclasses import dataclass
 
+import pandas as pd
+
 
 @dataclass(frozen=True)
 class FieldInfo:
@@ -28,7 +30,7 @@ FIELDS: dict[str, FieldInfo] = {
     "Late30_59":       FieldInfo("Payments 30-59 days late (last 2 years)", "count", actionable=False, sensitive=False),
     "Late60_89":       FieldInfo("Payments 60-89 days late (last 2 years)", "count", actionable=False, sensitive=False),
     "Late90":          FieldInfo("Payments 90+ days late", "count", actionable=False, sensitive=False),
-    "LateCodeFlag":    FieldInfo("Unexplained lateness code in records", "count", actionable=False, sensitive=False),
+    "LateCodeFlag":    FieldInfo("Unexplained lateness code in records", "flag", actionable=False, sensitive=False),
     "Age":             FieldInfo("Age", "years", actionable=False, sensitive=True),
     "Dependents":      FieldInfo("Number of dependents", "count", actionable=False, sensitive=True),
 }
@@ -38,11 +40,21 @@ EXPLAINED_FIELDS = list(FIELDS)
 ACTIONABLE_FIELDS = [name for name, info in FIELDS.items() if info.actionable]
 
 
+def as_explained_frame(inputs: pd.DataFrame) -> pd.DataFrame:
+    """Applicant inputs (INPUT_FIELDS, optional LateCodeFlag) in the EXPLAINED_FIELDS order, as floats."""
+    frame = inputs.copy()
+    if "LateCodeFlag" not in frame:
+        frame["LateCodeFlag"] = 0.0
+    return frame[EXPLAINED_FIELDS].astype(float)
+
+
 def format_value(field: str, value: float | None, estimated: bool = False) -> str:
     """Human-readable value, e.g. '95%', '$3,400', '2'. Marks estimated values."""
     if value is None or (isinstance(value, float) and math.isnan(value)):
         return "not declared"
     unit = FIELDS[field].unit
+    if unit == "flag":
+        return "yes" if value else "no"
     if unit == "ratio":
         text = f"{value:.0%}"
     elif unit == "money":

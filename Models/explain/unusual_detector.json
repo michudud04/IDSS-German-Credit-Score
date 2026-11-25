@@ -1,8 +1,12 @@
 {
-  "description": "Unusual-case warning. A score above distance_threshold, a value outside [min, max], or a lateness code makes an applicant unusual.",
+  "description": "Unusual-case warning. An applicant is unusual if the distance score is above distance_threshold, a value lies outside [q_low, q_high] (extreme) or outside [min, max] (never seen), or the record holds a lateness code.",
   "k": 10,
   "flag_rate": 0.01,
   "distance_threshold": 2.28710718133105,
+  "extreme_quantiles": [
+    0.001,
+    0.999
+  ],
   "profile_columns": [
     "RevUtil",
     "Age",

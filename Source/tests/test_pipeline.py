@@ -1,4 +1,4 @@
-"""Tests for the RiskPipeline wrapper (run on the temporary stand-in models)."""
+"""Tests for the RiskPipeline wrapper, run on the final models (Person B, loaded by Person D's loader)."""
 
 import numpy as np
 import pytest
@@ -13,8 +13,8 @@ pytestmark = pytest.mark.skipif(not config.PREPROCESSING_FILE.exists(),
 
 @pytest.fixture(scope="module")
 def pipeline():
-    from Source.explain.standins import load_standin_pipeline
-    return load_standin_pipeline()
+    from Source.decision.models import load_risk_pipeline
+    return load_risk_pipeline()
 
 
 @pytest.fixture(scope="module")
