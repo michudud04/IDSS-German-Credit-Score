@@ -1,0 +1,82 @@
+{
+  "model": "LogisticRegression",
+  "feature_space": "model (log1p + StandardScaler)",
+  "intercept": -3.2855,
+  "coefficients": [
+    {
+      "feature": "LateCodeFlag",
+      "standardized_weight": 2.3861,
+      "odds_multiplier": 10.8714
+    },
+    {
+      "feature": "RevUtil",
+      "standardized_weight": 0.6425,
+      "odds_multiplier": 1.9012
+    },
+    {
+      "feature": "Late90",
+      "standardized_weight": 0.3401,
+      "odds_multiplier": 1.4051
+    },
+    {
+      "feature": "Late30_59",
+      "standardized_weight": 0.3295,
+      "odds_multiplier": 1.3903
+    },
+    {
+      "feature": "OverLimit",
+      "standardized_weight": 0.2652,
+      "odds_multiplier": 1.3036
+    },
+    {
+      "feature": "Age",
+      "standardized_weight": -0.2336,
+      "odds_multiplier": 0.7917
+    },
+    {
+      "feature": "Late60_89",
+      "standardized_weight": 0.2094,
+      "odds_multiplier": 1.2329
+    },
+    {
+      "feature": "OpenLines",
+      "standardized_weight": 0.1585,
+      "odds_multiplier": 1.1717
+    },
+    {
+      "feature": "SavingCapacity",
+      "standardized_weight": -0.1242,
+      "odds_multiplier": 0.8832
+    },
+    {
+      "feature": "IncomePerPerson",
+      "standardized_weight": -0.0781,
+      "odds_multiplier": 0.9249
+    },
+    {
+      "feature": "RealEstateLines",
+      "standardized_weight": 0.0671,
+      "odds_multiplier": 1.0694
+    },
+    {
+      "feature": "IncomeMissing",
+      "standardized_weight": -0.0535,
+      "odds_multiplier": 0.9479
+    },
+    {
+      "feature": "MonthlyDebt",
+      "standardized_weight": -0.0496,
+      "odds_multiplier": 0.9516
+    },
+    {
+      "feature": "DebtRatio",
+      "standardized_weight": -0.0308,
+      "odds_multiplier": 0.9697
+    },
+    {
+      "feature": "MonthlyIncome",
+      "standardized_weight": -0.0002,
+      "odds_multiplier": 0.9998
+    }
+  ]
+}

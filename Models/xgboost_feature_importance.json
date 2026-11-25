@@ -1,0 +1,66 @@
+{
+  "model": "XGBClassifier",
+  "feature_space": "readable",
+  "feature_importances": [
+    {
+      "feature": "Late90",
+      "importance": 0.3041
+    },
+    {
+      "feature": "RevUtil",
+      "importance": 0.269
+    },
+    {
+      "feature": "Late60_89",
+      "importance": 0.1146
+    },
+    {
+      "feature": "Late30_59",
+      "importance": 0.1067
+    },
+    {
+      "feature": "LateCodeFlag",
+      "importance": 0.0445
+    },
+    {
+      "feature": "OverLimit",
+      "importance": 0.0379
+    },
+    {
+      "feature": "SavingCapacity",
+      "importance": 0.0264
+    },
+    {
+      "feature": "RealEstateLines",
+      "importance": 0.0235
+    },
+    {
+      "feature": "Age",
+      "importance": 0.0175
+    },
+    {
+      "feature": "DebtRatio",
+      "importance": 0.0129
+    },
+    {
+      "feature": "OpenLines",
+      "importance": 0.0114
+    },
+    {
+      "feature": "MonthlyDebt",
+      "importance": 0.0084
+    },
+    {
+      "feature": "IncomePerPerson",
+      "importance": 0.0079
+    },
+    {
+      "feature": "IncomeMissing",
+      "importance": 0.0079
+    },
+    {
+      "feature": "MonthlyIncome",
+      "importance": 0.0074
+    }
+  ]
+}

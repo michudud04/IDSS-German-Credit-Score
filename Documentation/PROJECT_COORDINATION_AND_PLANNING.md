@@ -6,41 +6,41 @@ This document covers the coordination and report sections managed by **Person E*
 
 ## 1. Functional Architecture of the IDSS Prototype (Deliverable `1.c`)
 
-Our Intelligent Decision Support System combines **Data-Driven Models** (Logistic Regression, XGBoost, Decision Tree ensemble + $k$-NN similarity & OOD detection) with a **Knowledge-Based Component** (explicit bank policy rules, out-of-distribution safeguard, and actionable counterfactual constraints) and an **LLM / Narrative Layer** tailored to two distinct actors: the **Bank Loan Officer** and the **Loan Applicant (Customer)**.
+Our Intelligent Decision Support System combines **Data-Driven Models** (5% Logistic Regression + 5% Decision Tree + 90% XGBoost calibrated ensemble, exact merged SHAP attributions, and $k$-NN case-based reasoning) with **Model-Driven / Knowledge-Based Components** (explicit bank policy rules, cost-ratio threshold policy, out-of-distribution safeguard, and actionable counterfactual constraints) and a **Guarded LLM / Template Narrative Layer** serving two actors: the **Bank Loan Officer** and the **Loan Applicant (Customer)**.
 
 ```mermaid
 flowchart TD
     subgraph Actors["1. System Actors & User Interface (Person E - Source/app/app.py)"]
-        Officer["Bank Loan Officer\n(Full diagnostics, risk slider, rules, similar cases)"]
+        Officer["Bank Loan Officer\n(Diagnostics, risk slider, rules, similar cases, induced model rules)"]
         Customer["Loan Applicant / Customer\n(Decision letter & actionable what-if advice)"]
     end
 
     subgraph DataLayer["2. Data & Run-Time Preprocessing (Person A - Source/data/)"]
         RawInput["10 Applicant Form Fields\n(RevUtil, Age, MonthlyIncome, MonthlyDebt,\nOpenLines, RealEstateLines, Late30_59, Late60_89, Late90, Dependents)"]
-        Prep["Preprocessor.prepare_customer()\n• Error correction & missing flags\n• HistGradientBoosting income imputer\n• Derived ratios (DebtRatio, SavingCapacity, IncomePerPerson)\n• Log1p + StandardScaler"]
+        Prep["Preprocessor.prepare_customer()\n• Error correction & missing-value flags\n• HistGradientBoosting income imputer\n• Derived ratios (DebtRatio, SavingCapacity, IncomePerPerson)\n• Log1p + StandardScaler"]
         RawInput --> Prep
     end
 
-    subgraph DataDriven["3. Data-Driven Models (Person B - Source/explain/pipeline.py)"]
-        LR["Logistic Regression\n(Model scale)"]
-        XGB["XGBoost Classifier\n(Readable scale)"]
-        DT["Decision Tree Classifier\n(Readable scale)"]
-        Comb["RiskPipeline Ensemble\n(Weighted probability + model disagreement)"]
-        Prep --> LR & XGB & DT --> Comb
+    subgraph DataDriven["3. Data-Driven Ensemble (Person B - Source/model_loader.py)"]
+        LR["Logistic Regression (5%)\n(Model scale)"]
+        DT["Decision Tree (5%)\n(Readable scale, depth 10)"]
+        XGB["XGBoost Classifier (90%)\n(Readable scale)"]
+        Comb["RiskPipeline\n(Calibrated per-model & weighted default probability)"]
+        Prep --> LR & DT & XGB --> Comb
     end
 
     subgraph ExplainLayer["4. Explanations & Case-Based Reasoning (Person C - Source/explain/)"]
-        Factors["KeyFactor Attribution\n(Per-feature & per-model contributions)"]
-        Advice["Counterfactual What-If Advice\n(Strictly actionable fields; never Age/Dependents)"]
+        Factors["Exact Merged SHAP Factors\n(Source/explain/factors.py)"]
+        Advice["Counterfactual What-If Advice\n(Source/explain/advice.py — strictly actionable fields)"]
         Sim["SimilarCaseFinder (k-NN on 96,000 train cases)\n(5 closest profiles + 50-neighbour default rate)"]
-        OOD["UnusualCaseDetector (OOD Warning)\n(99th-pct distance, range check, code 96/98)"]
+        OOD["UnusualCaseDetector (OOD Warning)\n(far_from_past_applicants, extreme_value,\noutside_observed_range, lateness_code)"]
         Prep --> Sim --> OOD
         Comb --> Factors & Advice
     end
 
-    subgraph KnowledgeLayer["5. Knowledge-Based Rules & Narrative Layer (Person D)"]
-        Rules["Bank Policy Rule Engine + Officer Risk Slider"]
-        LLM["Narrative Generator (LLM)\n• Officer Summary\n• Customer Letter"]
+    subgraph KnowledgeLayer["5. Knowledge-Based Policy & Guarded Narrative Layer (Person D - Source/decision/)"]
+        Rules["DecisionEngine + RiskPolicy + Bank Rules\n• Cost-ratio cut-off & grey-zone review band\n• RULE_MIN_AGE, RULE_SERIOUS_DELINQUENCY (>=3 Late90)\n• RULE_MISSING_HISTORY, RULE_DEBT_EXCEEDS_INCOME\n• OOD & model-disagreement review safeguards"]
+        LLM["NarrativeWriter (Ollama / OpenAI + Guard + Template Fallback)\n• Officer Summary\n• Non-discriminatory Customer Letter"]
         Comb & OOD & Factors & Advice & Sim --> Rules --> LLM
     end
 
@@ -53,12 +53,12 @@ flowchart TD
 
 All 4 testing use cases are pre-loaded in the Streamlit sidebar (`Source/app/use_cases.py`):
 
-| Use Case | Applicant Profile | Target Behaviour | Expected Outcome |
+| Use Case | Applicant Profile | Active IDSS Mechanisms | Expected Outcome |
 | :--- | :--- | :--- | :--- |
-| **UC1 — Low-risk applicant** | Age 44, Income \$6,800, Debt \$1,450 (21% DTI), RevUtil 18%, 0 late payments, 1 mortgage | Low predicted risk across all models, ordinary profile, no policy rule triggered | **APPROVE** |
-| **UC2 — Borderline applicant** | Age 42, Income \$4,800, Debt \$1,850 (39% DTI), RevUtil 75%, one 30–59d late payment | Risk near the cut-off; counterfactual advice shows how lowering utilisation/debt reaches approval | **REVIEW** |
-| **UC3 — High-risk applicant** | Age 33, Income \$3,100, Debt \$2,600 (84% DTI), RevUtil 115%, two 90+d late payments | High default probability + repeated 90+ day delinquencies and over-limit revolving credit | **REJECT** |
-| **UC4 — Unusual profile** | Age 20, Income \$2,500, Debt \$750, RevUtil 15%, 0 late payments, **12 mortgages & 18 open lines** | `UnusualCaseDetector` flags `outside_observed_range` & `far_from_past_applicants` | **REVIEW** |
+| **UC1 — Low-risk applicant** | Age 44, Income \$6,800, Debt \$1,450 (21% DTI), RevUtil 18%, 0 late payments, 1 mortgage | Low predicted risk (~1.6%) across all 3 models, 0% default in 50 nearest neighbours, no rule triggered | **APPROVE** |
+| **UC2 — Borderline applicant** | Age 42, Income \$4,800, Debt \$1,850 (39% DTI), RevUtil 75%, one 30–59d late payment | Risk (~12.4%) inside the grey zone around the 12% cut-off; counterfactual advice identifies changes that pass approval | **REVIEW** |
+| **UC3 — High-risk applicant** | Age 33, Income \$3,100, Debt \$2,600 (84% DTI), RevUtil 115%, two 90+d late payments | High ensemble default risk (~78%) due to over-limit credit cards and serious delinquencies | **REJECT** |
+| **UC4 — Unusual profile** | Age 20, Income \$2,500, Debt \$750, RevUtil 15%, 0 late payments, **12 mortgages & 18 open lines** | `UnusualCaseDetector` flags `outside_observed_range`, `far_from_past_applicants` & `extreme_value`, plus model disagreement | **REVIEW** |
 
 ---
 
@@ -66,11 +66,11 @@ All 4 testing use cases are pre-loaded in the Streamlit sidebar (`Source/app/use
 
 | Team Member | Role & Scope | Concrete Deliverables & Python Modules |
 | :--- | :--- | :--- |
-| **Person A** | **Data & Fairness** | • EDA & cleaning rules (`notebooks/EDA.ipynb`, `Source/data/preprocessing.py`)<br>• Fixed stratified 96k/24k/30k split (`Source/data/build_dataset.py`)<br>• Fairness check across age groups |
-| **Person B** | **Predictive Models** | • Training & tuning of Logistic Regression, XGBoost, and Decision Tree<br>• Model combination (`RiskPipeline` in `Source/explain/pipeline.py`)<br>• Evaluation metrics including false approvals and false rejections |
-| **Person C** | **Explanations & CBR** | • Shared explanation data types & field metadata (`Source/explain/types.py`, `features.py`)<br>• Key factor attribution (`KeyFactor`) & customer what-if advice (`AdviceItem`)<br>• Historical k-NN search (`Source/explain/similar.py`) & unusual-case warning (`Source/explain/unusual.py`) |
-| **Person D** | **Decision Rules & LLM** | • Final recommendation (`approve` / `review` / `reject`), risk slider & bank rules<br>• LLM generation for the officer summary and customer letter |
-| **Person E** | **App, Integration & Coordination** | • Unified `CaseResult` contract (`Source/app/case_result.py`) & orchestrator (`Source/app/orchestrator.py`)<br>• Streamlit UI (`Source/app/app.py`) & testing Use Cases (`Source/app/use_cases.py`)<br>• Project planning, Gantt diagram, time sheet, 3–5 min Demo video (`Demo/`), and final ZIP (`README.txt`) |
+| **Person A** | **Data & Fairness** | • EDA & cleaning rules (`notebooks/EDA.ipynb`, `Source/data/preprocessing.py`)<br>• Fixed stratified 96k/24k/30k split (`Source/data/build_dataset.py`)<br>• Fairness evaluation across age groups |
+| **Person B** | **Predictive Models** | • Training, tuning & evaluation of Logistic Regression, Decision Tree, and XGBoost (`notebooks/model_training.ipynb`, `Source/train_models.py`)<br>• Weighted ensemble (5% / 5% / 90%) & model loader (`Source/model_loader.py`, `Models/`) |
+| **Person C** | **Explanations & CBR** | • Shared types & field metadata (`Source/explain/types.py`, `features.py`, `pipeline.py`)<br>• Exact merged SHAP factors (`factors.py`) & counterfactual advice (`advice.py`)<br>• Historical k-NN search (`similar.py`), unusual-case warning (`unusual.py`) & `explain_case()` (`case.py`) |
+| **Person D** | **Decision Rules & LLM** | • Cost-ratio risk slider (`Source/decision/policy.py`), bank rules (`rules.py`), decision engine (`engine.py`, `service.py`, `evaluate.py`)<br>• Guarded LLM / template narrative writer (`Source/decision/narrative/`) |
+| **Person E** | **App, Integration & Coordination** | • Unified `CaseResult` (`Source/app/case_result.py`), orchestrator (`orchestrator.py`), use cases (`use_cases.py`), readable model exporter (`Source/export_readable_models.py`)<br>• 4-tab Streamlit UI (`Source/app/app.py`) & ZIP packager (`Source/build_deliverable_zip.py`)<br>• Planning, Gantt diagram, time sheet, 3–5 min Demo video (`Demo/`), slides (`Presentation/`), and `README.txt` |
 
 ---
 
@@ -83,12 +83,12 @@ All 4 testing use cases are pre-loaded in the Streamlit sidebar (`Source/app/use
 | **T1** | Problem definition, dataset selection & actor specification | All | TBD | TBD | TBD |
 | **T2** | Exploratory Data Analysis, imputation & feature engineering | Person A | TBD | TBD | TBD |
 | **T3** | Shared train/val/test split & `Preprocessor` runtime pipeline | Person A | TBD | TBD | TBD |
-| **T4** | Training & combination of LogReg, XGBoost & Decision Tree | Person B | TBD | TBD | TBD |
+| **T4** | Training & combination of LogReg, Decision Tree & XGBoost | Person B | TBD | TBD | TBD |
 | **T5** | Model evaluation (wrong approvals/rejections) & age fairness check | Person B, A | TBD | TBD | TBD |
 | **T6** | Similar-cases search & Unusual-applicant warning | Person C | TBD | TBD | TBD |
-| **T7** | Key factors attribution & what-if customer advice | Person C | TBD | TBD | TBD |
-| **T8** | Bank rules, risk slider & LLM officer summary / customer letter | Person D | TBD | TBD | TBD |
-| **T9** | Streamlit app, module integration & testing use cases | Person E | TBD | TBD | TBD |
+| **T7** | Exact SHAP key factors & what-if customer advice | Person C | TBD | TBD | TBD |
+| **T8** | Bank rules, cost-ratio risk slider & guarded LLM narratives | Person D | TBD | TBD | TBD |
+| **T9** | Streamlit app, module integration, readable models & testing use cases | Person E | TBD | TBD | TBD |
 | **T10** | Report, presentation slides, demo video & final ZIP | All (coord. E) | TBD | TBD | TBD |
 
 ---
@@ -115,12 +115,12 @@ All 4 testing use cases are pre-loaded in the Streamlit sidebar (`Source/app/use
 
 ## 6. Final ZIP Deliverable Checklist (PW3 Page 2–3)
 
-Label the final archive: `PW3-IDSS-YearCourse-T#NumberOfTeamwork-TitleOfWork.zip`
+Generate the archive with `python -m Source.build_deliverable_zip --year 2026-2027 --team <N> --title <Title>`:
 
 - [ ] `Documentation/` — Final PDF report containing sections `1.a` through `1.m`.
-- [ ] `Data/` — Raw dataset (`GiveMeSomeCredit-training.csv`) and prepared train/val/test tables + `preprocessing.joblib`.
-- [ ] `Models/` — Saved models (`logreg`, `xgboost`, `tree` / visualizable decision rules) and `Models/explain/unusual_detector.json`.
-- [ ] `Source/` — Complete Python package (`Source/data/`, `Source/explain/`, `Source/app/`, `Source/tests/`).
+- [ ] `Data/` — Raw dataset (`GiveMeSomeCredit-training.csv`) and preprocessed train/val/test splits + `preprocessing.joblib`.
+- [ ] `Models/` — Saved models (`.joblib`), `ensemble_config.json`, readable summaries (`logistic_regression_weights.json`, `xgboost_feature_importance.json`), and `explain/unusual_detector.json`.
+- [ ] `Source/` — Complete Python package (`data/`, `explain/`, `decision/`, `app/`, `tests/`, `train_models.py`, `model_loader.py`, `export_readable_models.py`, `build_deliverable_zip.py`, `notebooks/`).
 - [ ] `Demo/` — 3–5 minute video demonstrating the UI across the testing use cases.
 - [ ] `Presentation/` — Public presentation slides (max 15 slides), explicitly including:
   - Slide 1: Title, group number, member names, date.
