@@ -1,0 +1,337 @@
+|--- Late90 <= 0.50
+|   |--- RevUtil <= 0.62
+|   |   |--- Late60_89 <= 0.50
+|   |   |   |--- Late30_59 <= 0.50
+|   |   |   |   |--- RevUtil <= 0.30
+|   |   |   |   |   |--- RealEstateLines <= 4.50
+|   |   |   |   |   |   |--- RealEstateLines <= 2.50
+|   |   |   |   |   |   |   |--- SavingCapacity <= 3105.19
+|   |   |   |   |   |   |   |   |--- RevUtil <= 0.07
+|   |   |   |   |   |   |   |   |   |--- MonthlyDebt <= 3088.00
+|   |   |   |   |   |   |   |   |   |   |--- class: 0
+|   |   |   |   |   |   |   |   |   |--- MonthlyDebt >  3088.00
+|   |   |   |   |   |   |   |   |   |   |--- class: 0
+|   |   |   |   |   |   |   |   |--- RevUtil >  0.07
+|   |   |   |   |   |   |   |   |   |--- Age <= 57.50
+|   |   |   |   |   |   |   |   |   |   |--- class: 0
+|   |   |   |   |   |   |   |   |   |--- Age >  57.50
+|   |   |   |   |   |   |   |   |   |   |--- class: 0
+|   |   |   |   |   |   |   |--- SavingCapacity >  3105.19
+|   |   |   |   |   |   |   |   |--- Age <= 54.50
+|   |   |   |   |   |   |   |   |   |--- IncomePerPerson <= 1126.62
+|   |   |   |   |   |   |   |   |   |   |--- class: 0
+|   |   |   |   |   |   |   |   |   |--- IncomePerPerson >  1126.62
+|   |   |   |   |   |   |   |   |   |   |--- class: 0
+|   |   |   |   |   |   |   |   |--- Age >  54.50
+|   |   |   |   |   |   |   |   |   |--- RevUtil <= 0.11
+|   |   |   |   |   |   |   |   |   |   |--- class: 0
+|   |   |   |   |   |   |   |   |   |--- RevUtil >  0.11
+|   |   |   |   |   |   |   |   |   |   |--- class: 0
+|   |   |   |   |   |   |--- RealEstateLines >  2.50
+|   |   |   |   |   |   |   |--- RevUtil <= 0.24
+|   |   |   |   |   |   |   |   |--- Age <= 41.50
+|   |   |   |   |   |   |   |   |   |--- class: 0
+|   |   |   |   |   |   |   |   |--- Age >  41.50
+|   |   |   |   |   |   |   |   |   |--- SavingCapacity <= 1413.00
+|   |   |   |   |   |   |   |   |   |   |--- class: 0
+|   |   |   |   |   |   |   |   |   |--- SavingCapacity >  1413.00
+|   |   |   |   |   |   |   |   |   |   |--- class: 0
+|   |   |   |   |   |   |   |--- RevUtil >  0.24
+|   |   |   |   |   |   |   |   |--- class: 0
+|   |   |   |   |   |--- RealEstateLines >  4.50
+|   |   |   |   |   |   |--- MonthlyDebt <= 7867.00
+|   |   |   |   |   |   |   |--- class: 0
+|   |   |   |   |   |   |--- MonthlyDebt >  7867.00
+|   |   |   |   |   |   |   |--- class: 0
+|   |   |   |   |--- RevUtil >  0.30
+|   |   |   |   |   |--- DebtRatio <= 0.68
+|   |   |   |   |   |   |--- RevUtil <= 0.43
+|   |   |   |   |   |   |   |--- OpenLines <= 13.50
+|   |   |   |   |   |   |   |   |--- OpenLines <= 5.50
+|   |   |   |   |   |   |   |   |   |--- Age <= 52.50
+|   |   |   |   |   |   |   |   |   |   |--- class: 0
+|   |   |   |   |   |   |   |   |   |--- Age >  52.50
+|   |   |   |   |   |   |   |   |   |   |--- class: 0
+|   |   |   |   |   |   |   |   |--- OpenLines >  5.50
+|   |   |   |   |   |   |   |   |   |--- MonthlyDebt <= 747.50
+|   |   |   |   |   |   |   |   |   |   |--- class: 0
+|   |   |   |   |   |   |   |   |   |--- MonthlyDebt >  747.50
+|   |   |   |   |   |   |   |   |   |   |--- class: 0
+|   |   |   |   |   |   |   |--- OpenLines >  13.50
+|   |   |   |   |   |   |   |   |--- Age <= 49.50
+|   |   |   |   |   |   |   |   |   |--- class: 0
+|   |   |   |   |   |   |   |   |--- Age >  49.50
+|   |   |   |   |   |   |   |   |   |--- IncomePerPerson <= 6503.15
+|   |   |   |   |   |   |   |   |   |   |--- class: 0
+|   |   |   |   |   |   |   |   |   |--- IncomePerPerson >  6503.15
+|   |   |   |   |   |   |   |   |   |   |--- class: 0
+|   |   |   |   |   |   |--- RevUtil >  0.43
+|   |   |   |   |   |   |   |--- MonthlyDebt <= 263.50
+|   |   |   |   |   |   |   |   |--- class: 0
+|   |   |   |   |   |   |   |--- MonthlyDebt >  263.50
+|   |   |   |   |   |   |   |   |--- OpenLines <= 8.50
+|   |   |   |   |   |   |   |   |   |--- DebtRatio <= 0.52
+|   |   |   |   |   |   |   |   |   |   |--- class: 0
+|   |   |   |   |   |   |   |   |   |--- DebtRatio >  0.52
+|   |   |   |   |   |   |   |   |   |   |--- class: 0
+|   |   |   |   |   |   |   |   |--- OpenLines >  8.50
+|   |   |   |   |   |   |   |   |   |--- MonthlyDebt <= 1178.50
+|   |   |   |   |   |   |   |   |   |   |--- class: 0
+|   |   |   |   |   |   |   |   |   |--- MonthlyDebt >  1178.50
+|   |   |   |   |   |   |   |   |   |   |--- class: 0
+|   |   |   |   |   |--- DebtRatio >  0.68
+|   |   |   |   |   |   |--- Age <= 52.50
+|   |   |   |   |   |   |   |--- MonthlyIncome <= 3961.00
+|   |   |   |   |   |   |   |   |--- MonthlyDebt <= 2498.50
+|   |   |   |   |   |   |   |   |   |--- class: 0
+|   |   |   |   |   |   |   |   |--- MonthlyDebt >  2498.50
+|   |   |   |   |   |   |   |   |   |--- class: 0
+|   |   |   |   |   |   |   |--- MonthlyIncome >  3961.00
+|   |   |   |   |   |   |   |   |--- SavingCapacity <= 1088.50
+|   |   |   |   |   |   |   |   |   |--- class: 0
+|   |   |   |   |   |   |   |   |--- SavingCapacity >  1088.50
+|   |   |   |   |   |   |   |   |   |--- class: 0
+|   |   |   |   |   |   |--- Age >  52.50
+|   |   |   |   |   |   |   |--- OpenLines <= 12.50
+|   |   |   |   |   |   |   |   |--- class: 0
+|   |   |   |   |   |   |   |--- OpenLines >  12.50
+|   |   |   |   |   |   |   |   |--- class: 0
+|   |   |   |--- Late30_59 >  0.50
+|   |   |   |   |--- Late30_59 <= 1.50
+|   |   |   |   |   |--- RealEstateLines <= 3.50
+|   |   |   |   |   |   |--- RevUtil <= 0.27
+|   |   |   |   |   |   |   |--- IncomePerPerson <= 1706.50
+|   |   |   |   |   |   |   |   |--- RevUtil <= 0.11
+|   |   |   |   |   |   |   |   |   |--- class: 0
+|   |   |   |   |   |   |   |   |--- RevUtil >  0.11
+|   |   |   |   |   |   |   |   |   |--- class: 0
+|   |   |   |   |   |   |   |--- IncomePerPerson >  1706.50
+|   |   |   |   |   |   |   |   |--- SavingCapacity <= 1504.00
+|   |   |   |   |   |   |   |   |   |--- class: 0
+|   |   |   |   |   |   |   |   |--- SavingCapacity >  1504.00
+|   |   |   |   |   |   |   |   |   |--- MonthlyDebt <= 70.50
+|   |   |   |   |   |   |   |   |   |   |--- class: 0
+|   |   |   |   |   |   |   |   |   |--- MonthlyDebt >  70.50
+|   |   |   |   |   |   |   |   |   |   |--- class: 0
+|   |   |   |   |   |   |--- RevUtil >  0.27
+|   |   |   |   |   |   |   |--- MonthlyIncome <= 5418.00
+|   |   |   |   |   |   |   |   |--- DebtRatio <= 0.26
+|   |   |   |   |   |   |   |   |   |--- class: 0
+|   |   |   |   |   |   |   |   |--- DebtRatio >  0.26
+|   |   |   |   |   |   |   |   |   |--- MonthlyIncome <= 4497.50
+|   |   |   |   |   |   |   |   |   |   |--- class: 0
+|   |   |   |   |   |   |   |   |   |--- MonthlyIncome >  4497.50
+|   |   |   |   |   |   |   |   |   |   |--- class: 0
+|   |   |   |   |   |   |   |--- MonthlyIncome >  5418.00
+|   |   |   |   |   |   |   |   |--- RevUtil <= 0.46
+|   |   |   |   |   |   |   |   |   |--- MonthlyIncome <= 7293.00
+|   |   |   |   |   |   |   |   |   |   |--- class: 0
+|   |   |   |   |   |   |   |   |   |--- MonthlyIncome >  7293.00
+|   |   |   |   |   |   |   |   |   |   |--- class: 0
+|   |   |   |   |   |   |   |   |--- RevUtil >  0.46
+|   |   |   |   |   |   |   |   |   |--- class: 0
+|   |   |   |   |   |--- RealEstateLines >  3.50
+|   |   |   |   |   |   |--- class: 0
+|   |   |   |   |--- Late30_59 >  1.50
+|   |   |   |   |   |--- RevUtil <= 0.50
+|   |   |   |   |   |   |--- SavingCapacity <= 3230.37
+|   |   |   |   |   |   |   |--- Age <= 54.50
+|   |   |   |   |   |   |   |   |--- class: 0
+|   |   |   |   |   |   |   |--- Age >  54.50
+|   |   |   |   |   |   |   |   |--- class: 0
+|   |   |   |   |   |   |--- SavingCapacity >  3230.37
+|   |   |   |   |   |   |   |--- MonthlyIncome <= 8802.22
+|   |   |   |   |   |   |   |   |--- IncomePerPerson <= 3939.82
+|   |   |   |   |   |   |   |   |   |--- class: 0
+|   |   |   |   |   |   |   |   |--- IncomePerPerson >  3939.82
+|   |   |   |   |   |   |   |   |   |--- class: 0
+|   |   |   |   |   |   |   |--- MonthlyIncome >  8802.22
+|   |   |   |   |   |   |   |   |--- class: 0
+|   |   |   |   |   |--- RevUtil >  0.50
+|   |   |   |   |   |   |--- class: 0
+|   |   |--- Late60_89 >  0.50
+|   |   |   |--- Late30_59 <= 0.50
+|   |   |   |   |--- SavingCapacity <= 2356.69
+|   |   |   |   |   |--- class: 0
+|   |   |   |   |--- SavingCapacity >  2356.69
+|   |   |   |   |   |--- RevUtil <= 0.09
+|   |   |   |   |   |   |--- class: 0
+|   |   |   |   |   |--- RevUtil >  0.09
+|   |   |   |   |   |   |--- class: 0
+|   |   |   |--- Late30_59 >  0.50
+|   |   |   |   |--- IncomePerPerson <= 2587.50
+|   |   |   |   |   |--- class: 0
+|   |   |   |   |--- IncomePerPerson >  2587.50
+|   |   |   |   |   |--- MonthlyDebt <= 2209.50
+|   |   |   |   |   |   |--- class: 0
+|   |   |   |   |   |--- MonthlyDebt >  2209.50
+|   |   |   |   |   |   |--- class: 0
+|   |--- RevUtil >  0.62
+|   |   |--- Late60_89 <= 0.50
+|   |   |   |--- Late30_59 <= 0.50
+|   |   |   |   |--- OpenLines <= 0.50
+|   |   |   |   |   |--- IncomePerPerson <= 2747.50
+|   |   |   |   |   |   |--- Age <= 29.50
+|   |   |   |   |   |   |   |--- class: 0
+|   |   |   |   |   |   |--- Age >  29.50
+|   |   |   |   |   |   |   |--- class: 0
+|   |   |   |   |   |--- IncomePerPerson >  2747.50
+|   |   |   |   |   |   |--- class: 0
+|   |   |   |   |--- OpenLines >  0.50
+|   |   |   |   |   |--- RevUtil <= 1.01
+|   |   |   |   |   |   |--- Age <= 57.50
+|   |   |   |   |   |   |   |--- DebtRatio <= 0.77
+|   |   |   |   |   |   |   |   |--- SavingCapacity <= 4357.50
+|   |   |   |   |   |   |   |   |   |--- OpenLines <= 14.50
+|   |   |   |   |   |   |   |   |   |   |--- class: 0
+|   |   |   |   |   |   |   |   |   |--- OpenLines >  14.50
+|   |   |   |   |   |   |   |   |   |   |--- class: 0
+|   |   |   |   |   |   |   |   |--- SavingCapacity >  4357.50
+|   |   |   |   |   |   |   |   |   |--- MonthlyDebt <= 665.00
+|   |   |   |   |   |   |   |   |   |   |--- class: 0
+|   |   |   |   |   |   |   |   |   |--- MonthlyDebt >  665.00
+|   |   |   |   |   |   |   |   |   |   |--- class: 0
+|   |   |   |   |   |   |   |--- DebtRatio >  0.77
+|   |   |   |   |   |   |   |   |--- OpenLines <= 7.50
+|   |   |   |   |   |   |   |   |   |--- class: 0
+|   |   |   |   |   |   |   |   |--- OpenLines >  7.50
+|   |   |   |   |   |   |   |   |   |--- MonthlyDebt <= 3637.00
+|   |   |   |   |   |   |   |   |   |   |--- class: 0
+|   |   |   |   |   |   |   |   |   |--- MonthlyDebt >  3637.00
+|   |   |   |   |   |   |   |   |   |   |--- class: 0
+|   |   |   |   |   |   |--- Age >  57.50
+|   |   |   |   |   |   |   |--- SavingCapacity <= 1815.74
+|   |   |   |   |   |   |   |   |--- OpenLines <= 10.50
+|   |   |   |   |   |   |   |   |   |--- IncomePerPerson <= 1862.50
+|   |   |   |   |   |   |   |   |   |   |--- class: 0
+|   |   |   |   |   |   |   |   |   |--- IncomePerPerson >  1862.50
+|   |   |   |   |   |   |   |   |   |   |--- class: 0
+|   |   |   |   |   |   |   |   |--- OpenLines >  10.50
+|   |   |   |   |   |   |   |   |   |--- class: 0
+|   |   |   |   |   |   |   |--- SavingCapacity >  1815.74
+|   |   |   |   |   |   |   |   |--- OpenLines <= 1.50
+|   |   |   |   |   |   |   |   |   |--- class: 0
+|   |   |   |   |   |   |   |   |--- OpenLines >  1.50
+|   |   |   |   |   |   |   |   |   |--- OpenLines <= 11.50
+|   |   |   |   |   |   |   |   |   |   |--- class: 0
+|   |   |   |   |   |   |   |   |   |--- OpenLines >  11.50
+|   |   |   |   |   |   |   |   |   |   |--- class: 0
+|   |   |   |   |   |--- RevUtil >  1.01
+|   |   |   |   |   |   |--- MonthlyIncome <= 4385.81
+|   |   |   |   |   |   |   |--- class: 0
+|   |   |   |   |   |   |--- MonthlyIncome >  4385.81
+|   |   |   |   |   |   |   |--- class: 0
+|   |   |   |--- Late30_59 >  0.50
+|   |   |   |   |--- RevUtil <= 1.00
+|   |   |   |   |   |--- Late30_59 <= 1.50
+|   |   |   |   |   |   |--- MonthlyDebt <= 804.00
+|   |   |   |   |   |   |   |--- Age <= 32.50
+|   |   |   |   |   |   |   |   |--- class: 0
+|   |   |   |   |   |   |   |--- Age >  32.50
+|   |   |   |   |   |   |   |   |--- MonthlyDebt <= 402.50
+|   |   |   |   |   |   |   |   |   |--- class: 0
+|   |   |   |   |   |   |   |   |--- MonthlyDebt >  402.50
+|   |   |   |   |   |   |   |   |   |--- class: 0
+|   |   |   |   |   |   |--- MonthlyDebt >  804.00
+|   |   |   |   |   |   |   |--- DebtRatio <= 0.74
+|   |   |   |   |   |   |   |   |--- Age <= 51.50
+|   |   |   |   |   |   |   |   |   |--- OpenLines <= 10.50
+|   |   |   |   |   |   |   |   |   |   |--- class: 0
+|   |   |   |   |   |   |   |   |   |--- OpenLines >  10.50
+|   |   |   |   |   |   |   |   |   |   |--- class: 0
+|   |   |   |   |   |   |   |   |--- Age >  51.50
+|   |   |   |   |   |   |   |   |   |--- SavingCapacity <= 2991.25
+|   |   |   |   |   |   |   |   |   |   |--- class: 0
+|   |   |   |   |   |   |   |   |   |--- SavingCapacity >  2991.25
+|   |   |   |   |   |   |   |   |   |   |--- class: 0
+|   |   |   |   |   |   |   |--- DebtRatio >  0.74
+|   |   |   |   |   |   |   |   |--- class: 0
+|   |   |   |   |   |--- Late30_59 >  1.50
+|   |   |   |   |   |   |--- DebtRatio <= 0.49
+|   |   |   |   |   |   |   |--- IncomePerPerson <= 2322.71
+|   |   |   |   |   |   |   |   |--- class: 0
+|   |   |   |   |   |   |   |--- IncomePerPerson >  2322.71
+|   |   |   |   |   |   |   |   |--- MonthlyIncome <= 6416.00
+|   |   |   |   |   |   |   |   |   |--- class: 0
+|   |   |   |   |   |   |   |   |--- MonthlyIncome >  6416.00
+|   |   |   |   |   |   |   |   |   |--- class: 0
+|   |   |   |   |   |   |--- DebtRatio >  0.49
+|   |   |   |   |   |   |   |--- class: 0
+|   |   |   |   |--- RevUtil >  1.00
+|   |   |   |   |   |--- SavingCapacity <= 2392.41
+|   |   |   |   |   |   |--- class: 0
+|   |   |   |   |   |--- SavingCapacity >  2392.41
+|   |   |   |   |   |   |--- class: 0
+|   |   |--- Late60_89 >  0.50
+|   |   |   |--- RevUtil <= 1.01
+|   |   |   |   |--- SavingCapacity <= 1476.01
+|   |   |   |   |   |--- class: 0
+|   |   |   |   |--- SavingCapacity >  1476.01
+|   |   |   |   |   |--- Age <= 54.50
+|   |   |   |   |   |   |--- Age <= 40.50
+|   |   |   |   |   |   |   |--- class: 0
+|   |   |   |   |   |   |--- Age >  40.50
+|   |   |   |   |   |   |   |--- IncomePerPerson <= 3013.74
+|   |   |   |   |   |   |   |   |--- class: 0
+|   |   |   |   |   |   |   |--- IncomePerPerson >  3013.74
+|   |   |   |   |   |   |   |   |--- class: 0
+|   |   |   |   |   |--- Age >  54.50
+|   |   |   |   |   |   |--- class: 0
+|   |   |   |--- RevUtil >  1.01
+|   |   |   |   |--- class: 1
+|--- Late90 >  0.50
+|   |--- Late90 <= 1.50
+|   |   |--- RevUtil <= 0.50
+|   |   |   |--- Late60_89 <= 0.50
+|   |   |   |   |--- Late30_59 <= 0.50
+|   |   |   |   |   |--- MonthlyIncome <= 4659.13
+|   |   |   |   |   |   |--- class: 0
+|   |   |   |   |   |--- MonthlyIncome >  4659.13
+|   |   |   |   |   |   |--- class: 0
+|   |   |   |   |--- Late30_59 >  0.50
+|   |   |   |   |   |--- class: 0
+|   |   |   |--- Late60_89 >  0.50
+|   |   |   |   |--- class: 0
+|   |   |--- RevUtil >  0.50
+|   |   |   |--- Late30_59 <= 1.50
+|   |   |   |   |--- Late60_89 <= 0.50
+|   |   |   |   |   |--- IncomePerPerson <= 4532.00
+|   |   |   |   |   |   |--- MonthlyIncome <= 3149.42
+|   |   |   |   |   |   |   |--- MonthlyIncome <= 2620.50
+|   |   |   |   |   |   |   |   |--- class: 0
+|   |   |   |   |   |   |   |--- MonthlyIncome >  2620.50
+|   |   |   |   |   |   |   |   |--- class: 0
+|   |   |   |   |   |   |--- MonthlyIncome >  3149.42
+|   |   |   |   |   |   |   |--- SavingCapacity <= 3585.50
+|   |   |   |   |   |   |   |   |--- class: 0
+|   |   |   |   |   |   |   |--- SavingCapacity >  3585.50
+|   |   |   |   |   |   |   |   |--- class: 0
+|   |   |   |   |   |--- IncomePerPerson >  4532.00
+|   |   |   |   |   |   |--- class: 0
+|   |   |   |   |--- Late60_89 >  0.50
+|   |   |   |   |   |--- class: 0
+|   |   |   |--- Late30_59 >  1.50
+|   |   |   |   |--- RevUtil <= 0.91
+|   |   |   |   |   |--- class: 0
+|   |   |   |   |--- RevUtil >  0.91
+|   |   |   |   |   |--- class: 1
+|   |--- Late90 >  1.50
+|   |   |--- RevUtil <= 1.02
+|   |   |   |--- SavingCapacity <= 2570.50
+|   |   |   |   |--- Late90 <= 2.50
+|   |   |   |   |   |--- class: 1
+|   |   |   |   |--- Late90 >  2.50
+|   |   |   |   |   |--- class: 1
+|   |   |   |--- SavingCapacity >  2570.50
+|   |   |   |   |--- Late30_59 <= 0.50
+|   |   |   |   |   |--- IncomePerPerson <= 3082.59
+|   |   |   |   |   |   |--- class: 0
+|   |   |   |   |   |--- IncomePerPerson >  3082.59
+|   |   |   |   |   |   |--- class: 0
+|   |   |   |   |--- Late30_59 >  0.50
+|   |   |   |   |   |--- MonthlyIncome <= 5293.00
+|   |   |   |   |   |   |--- class: 0
+|   |   |   |   |   |--- MonthlyIncome >  5293.00
+|   |   |   |   |   |   |--- class: 1
+|   |   |--- RevUtil >  1.02
+|   |   |   |--- class: 1

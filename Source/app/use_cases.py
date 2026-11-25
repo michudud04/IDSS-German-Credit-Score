@@ -1,20 +1,20 @@
-from __future__ import annotations
+"""Pre-defined applicant profiles used to test and demonstrate the IDSS."""
 
 from dataclasses import dataclass
 
 
-@dataclass(frozen=True)
+@dataclass
 class UseCase:
     id: str
     title: str
     subtitle: str
     expected_outcome: str
     narrative: str
-    inputs: dict[str, float | None]
+    inputs: dict
     default_cutoff: float = 0.12
 
 
-USE_CASES: dict[str, UseCase] = {
+USE_CASES = {
     "uc1_prime_approval": UseCase(
         id="uc1_prime_approval",
         title="Case 1: Low-risk applicant (Approve)",

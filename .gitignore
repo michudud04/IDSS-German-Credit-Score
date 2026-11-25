@@ -8,6 +8,8 @@ ENV/
 *.xls
 *.xlsx
 /data/
+/Data/
+/*.zip
 
 # Jupyter Notebook Checkpoints & Python Cache
 .ipynb_checkpoints/
